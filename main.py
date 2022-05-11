@@ -71,7 +71,7 @@ csv_file = 'all-the-news-2-1.csv'
 class FeatureExtraction:
     def __init__(self):
         #Load the pretrained model
-        self.fe = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2', device=0)
+        self.fe = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 
     def run_fe_batch(self, list_of_input_text):
         list_of_fe_vec = self.fe.encode(list_of_input_text, show_progress_bar=False)
