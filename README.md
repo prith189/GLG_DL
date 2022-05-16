@@ -3,9 +3,10 @@ NAMED ENTITY RECOGNITION:
 - Copy the NER.py script to the project
 - Copy the finetuned BERT model from here: 
 - Run NER as follows:
+```
   pipeline = NER_pipeline()
   pipeline.run_ner(sample_text)
-
+```
 
 TOPIC MODELING:
  - The following pretrained files need to be downloaded before running main.py
