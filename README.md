@@ -1,5 +1,13 @@
 # GLG_DL
+NAMED ENTITY RECOGNITION:
+- Copy the NER.py script to the project
+- Copy the finetuned BERT model from here: 
+- Run NER as follows:
+  pipeline = NER_pipeline()
+  pipeline.run_ner(sample_text)
 
+
+TOPIC MODELING:
  - The following pretrained files need to be downloaded before running main.py
  - The script outputs a Topic, and associated keywords for each sample text provided in main.py
  
