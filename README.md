@@ -2,9 +2,9 @@
 NAMED ENTITY RECOGNITION:
 - Copy the NER.py script to the project
 - Copy the finetuned BERT model files from here:
-https://drive.google.com/file/d/1ZElGgNePMQMwMiepsOx0MkGWDMr-kQjM/view?usp=sharing
-https://drive.google.com/file/d/1CRzkhZbcw4yT7vVvMmUuSyeJDRCBq76t/view?usp=sharing
-https://drive.google.com/file/d/1Q5j4rWPWHK5iKeW-D8hWNBVctAavbce_/view?usp=sharing
+    * https://drive.google.com/file/d/1ZElGgNePMQMwMiepsOx0MkGWDMr-kQjM/view?usp=sharing
+    * https://drive.google.com/file/d/1CRzkhZbcw4yT7vVvMmUuSyeJDRCBq76t/view?usp=sharing
+    * https://drive.google.com/file/d/1Q5j4rWPWHK5iKeW-D8hWNBVctAavbce_/view?usp=sharing
 
 
 - Run NER as follows:
