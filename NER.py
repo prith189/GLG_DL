@@ -127,7 +127,20 @@ class NER_Pipeline:
         #Load the finetuned model
         self.ner_modeler = NER_Model()
         self.ner_modeler.build_model(n_classes, True)
+
+        self.LABEL_CONVERT = {'org': 'ORG',
+                              'tim': 'DATE',
+                              'per': 'PERSON',
+                              'geo': 'GEO',
+                              'gpe': 'GPE',
+                              'art': 'ART',
+                              'eve': 'EVE',
+                              'nat': 'NAT',
+                              }
     
+    def convert_label(self, label):
+        return self.LABEL_CONVERT[label]
+
     def run_ner_on_sentence(self, sample_text):
         #Tokenize the sample text, and get the word ids
         encoded = self.dataset.tokenizer.encode_plus(sample_text,
@@ -159,26 +172,40 @@ class NER_Pipeline:
             if(name not in completed):
                 if(label[0]=='B'):
                     full_names.append(name)
-                    full_labels.append(label[2:])
+                    full_labels.append(self.convert_label(label[2:]))
                     prev_index += 1
                 else:
-                    full_names[prev_index] = full_names[prev_index] + ' ' + name
+                    if(len(full_names)>0):
+                        full_names[prev_index] = full_names[prev_index] + ' ' + name
+                    else:
+                        continue
                 completed[name] = 1
         return full_names, full_labels
     
-    def run_ner(self, full_text):
-        sentences = split_sentences(full_text)
+    def run_ner(self, full_text, display=False):
+        #sentences = split_sentences(full_text)
+        sentences = full_text.split('.')
         names = []
         labels = []
+        start_idxs = []
+        stop_idxs = []
+        total_start_len = 0
         for sentence in sentences:
             snames, slabels = self.run_ner_on_sentence(sentence.split(' '))
+            for key, value in zip(snames, slabels):
+                start = sentence.find(key)
+                start_idxs.append(total_start_len + start)
+                stop_idxs.append(total_start_len + start + len(key))
+            total_start_len += len(sentence) + 1
             names.extend(snames)
             labels.extend(slabels)
-
-        ner_dict = {name:label for name,label in zip(names, labels)}
-        return ner_dict
+        
+        if(display):
+            for name, label in zip(names, labels):
+                print(name, label)
+        return names, labels, start_idxs, stop_idxs
 
 if __name__=="__main__":
     pipeline = NER_Pipeline()
     sample_text = 'Edward Snowden touched off an enormous public relations campaign on Tuesday calling for Barack Obama to grant him a presidential pardon.'
-    pipeline.run_ner(sample_text)
+    _, _, _, _ = pipeline.run_ner(sample_text, display=True)
