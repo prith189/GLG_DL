@@ -183,8 +183,8 @@ class NER_Pipeline:
         return full_names, full_labels
     
     def run_ner(self, full_text, display=False):
-        #sentences = split_sentences(full_text)
-        sentences = full_text.split('.')
+        sentences = split_sentences(full_text)
+        #sentences = full_text.split('.')
         names = []
         labels = []
         start_idxs = []
@@ -201,11 +201,14 @@ class NER_Pipeline:
             labels.extend(slabels)
         
         if(display):
+            print(full_text)
+            print('\nIdentified Names:')
             for name, label in zip(names, labels):
-                print(name, label)
-        return names, labels, start_idxs, stop_idxs
+                print('Name:{}, Label:{}'.format(name, label))
+            print('\n\n\n\n******************\n\n\n\n')
+        return names, labels
 
 if __name__=="__main__":
     pipeline = NER_Pipeline()
     sample_text = 'Edward Snowden touched off an enormous public relations campaign on Tuesday calling for Barack Obama to grant him a presidential pardon.'
-    _, _, _, _ = pipeline.run_ner(sample_text, display=True)
+    _, _ = pipeline.run_ner(sample_text, display=True)
