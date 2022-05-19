@@ -10,7 +10,7 @@ NAMED ENTITY RECOGNITION:
 - Run NER as follows:
 ```python
   pipeline = NER_pipeline()
-  pipeline.run_ner(sample_text)
+  names, labels = pipeline.run_ner(sample_text)
 ```
 
 TOPIC MODELING:
