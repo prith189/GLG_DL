@@ -17,9 +17,11 @@ from transformers import AutoTokenizer, AutoConfig, TFAutoModel
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from gensim.summarization.textcleaner import split_sentences
+import pickle
 
 PRETRAINED_MODEL_NAME = 'bert-base-uncased'
 FINETUNED_MODEL_NAME = 'finetuned_' + PRETRAINED_MODEL_NAME
+ENCODER_FILE_NAME = 'tag_encoder.p'
 FILE_DIR = '/content/drive/My Drive/fourthbrain/NER_Labels'
 SEQUENCE_LENGTH = 128
 BATCH_SIZE = 32
@@ -118,16 +120,34 @@ class NERDataset:
 #Create the end-to-end pipeline and test on new dataset
 class NER_Pipeline:
     def __init__(self):
-        #Load the tokenizer in the dataset
-        self.dataset = NERDataset()
-        self.dataset.build_ner_dataset()
-        self.dataset.test_train_split()
-        n_classes = self.dataset.tag_encoder.classes_.shape[0]
+        if(RUN_TRAINING):
+            #Load the Dataset
+            self.dataset = NERDataset()
+            self.dataset.build_ner_dataset()
+            self.dataset.test_train_split()
+            n_classes = self.dataset.tag_encoder.classes_.shape[0]
 
+            #Load only the pretrained model and run training
+            self.ner_modeler = NER_Model()
+            self.ner_modeler.build_model(n_classes, False)
+            self.ner_modeler.train_model(self.dataset.seq_train, self.dataset.mask_train, self.dataset.target_train, self.dataset.seq_test, self.dataset.mask_test, self.dataset.target_test)
+            self.ner_modeler.model.save_weights(os.path.join(FILE_DIR, FINETUNED_MODEL_NAME))
+
+        #Load the tokenizer and tag encoder
+        self.tokenizer = AutoTokenizer.from_pretrained(FILE_DIR,normalization=True)
+        
+        encoder_file = open(os.path.join(FILE_DIR, ENCODER_FILE_NAME), 'rb')
+        self.tag_encoder = pickle.load(encoder_file)
+        encoder_file.close()
+        n_classes = self.tag_encoder.classes_.shape[0]
+        self.background_class = self.tag_encoder.transform(['O'])[0]
+        
         #Load the finetuned model
         self.ner_modeler = NER_Model()
         self.ner_modeler.build_model(n_classes, True)
-
+            
+            
+            
         self.LABEL_CONVERT = {'org': 'ORG',
                               'tim': 'DATE',
                               'per': 'PERSON',
@@ -143,7 +163,7 @@ class NER_Pipeline:
 
     def run_ner_on_sentence(self, sample_text):
         #Tokenize the sample text, and get the word ids
-        encoded = self.dataset.tokenizer.encode_plus(sample_text,
+        encoded = self.tokenizer.encode_plus(sample_text,
                                             add_special_tokens = True,
                                             max_length = SEQUENCE_LENGTH,
                                             is_split_into_words=True,
@@ -160,8 +180,8 @@ class NER_Pipeline:
         word_ids = np.array(word_ids)
         valid_sample_out = sample_out[0, word_ids!=None]
         valid_word_ids = word_ids[word_ids!=None]
-        names = [sample_text[i] for i in valid_word_ids[valid_sample_out!=self.dataset.background_class]]
-        labels = [self.dataset.tag_encoder.inverse_transform([i])[0] for i in valid_sample_out[valid_sample_out!=self.dataset.background_class]]
+        names = [sample_text[i] for i in valid_word_ids[valid_sample_out!=self.background_class]]
+        labels = [self.tag_encoder.inverse_transform([i])[0] for i in valid_sample_out[valid_sample_out!=self.background_class]]
 
         #Combine the tokens and correponding labels. Output the final names and their corresponding classes
         full_names = []
